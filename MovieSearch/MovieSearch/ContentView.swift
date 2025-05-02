@@ -14,6 +14,12 @@ struct ContentView: View {
                 .imageScale(.large)
                 .foregroundStyle(.tint)
             Text("Hello, world!")
+            Text("Movie Search")
+                        .onAppear {
+                            Task {
+                                await searchMovies(query: "Leon the professional")
+                            }
+                        }
         }
         .padding()
     }

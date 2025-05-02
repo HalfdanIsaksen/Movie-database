@@ -25,7 +25,7 @@ func searchMovies(query: String, language: String = "en-US") async{
         
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
-        request.timeoutInterval = 10
+        request.timeoutInterval = 60
         request.allHTTPHeaderFields = [
             "accept": "application/json",
             "Authorization": "Bearer \(apiKey)"

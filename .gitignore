@@ -49,7 +49,9 @@ playground.xcworkspace
 
 Carthage/Build/
 # Ignore secrets config file
-Secrets.xcconfig
+MovieSearch/Secrets.xcconfig
+# Ignore api key
+
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo.

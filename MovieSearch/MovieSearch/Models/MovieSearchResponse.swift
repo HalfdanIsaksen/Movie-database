@@ -23,7 +23,7 @@ func searchMovies(query: String, language: String = "en-US") async{
         request.timeoutInterval = 10
         request.allHTTPHeaderFields = [
             "accept": "application/json",
-            "Authorization": "xx"
+            "Authorization": "Bearer xx"
         ]
         
         let (data, _) = try await URLSession.shared.data(for: request)

@@ -8,6 +8,11 @@ import Foundation
 
 func searchMovies(query: String, language: String = "en-US") async{
     do{
+        guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
+                    print("API Key not found in Info.plist")
+                    return
+        }
+        
         let url = URL(string: "https://api.themoviedb.org/3/search/movie")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         let queryItems: [URLQueryItem] = [
@@ -23,7 +28,7 @@ func searchMovies(query: String, language: String = "en-US") async{
         request.timeoutInterval = 10
         request.allHTTPHeaderFields = [
             "accept": "application/json",
-            "Authorization": "Bearer xx"
+            "Authorization": "Bearer \(apiKey)"
         ]
         
         let (data, _) = try await URLSession.shared.data(for: request)

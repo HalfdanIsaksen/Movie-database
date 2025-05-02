@@ -50,6 +50,7 @@ playground.xcworkspace
 Carthage/Build/
 # Ignore secrets config file
 /MovieSearch/MovieSearch/Secrets.xcconfig
+*.xcconfig
 # Ignore api key
 
 # fastlane

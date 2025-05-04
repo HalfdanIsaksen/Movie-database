@@ -8,7 +8,11 @@
 import SwiftUI
 
 struct SearchField: View {
+    @State var searchText: String = ""
     var body: some View {
-        TextField("Search", text: .constant("Search..."))
+        TextField("Search...", text: $searchText)
     }
+}
+#Preview {
+    SearchField()
 }

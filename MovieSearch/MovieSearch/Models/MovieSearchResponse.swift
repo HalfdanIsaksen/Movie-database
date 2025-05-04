@@ -6,6 +6,20 @@
 //
 import Foundation
 
+struct MovieSearchResponse: Decodable {
+    let results: [Movie]
+}
+
+struct Movie: Identifiable, Decodable {
+    let id: Int
+    let title: String
+    let original_title: String
+    let overview: String
+    let poster_path: String?
+    let release_date: String
+    let vote_average: Double
+}
+
 func searchMovies(query: String, language: String = "en-US") async{
     do{
         guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {

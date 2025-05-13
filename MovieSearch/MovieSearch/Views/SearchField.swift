@@ -16,7 +16,11 @@ struct SearchField: View {
                 TextField("Search movies...", text: $viewModel.searchText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
-
+                
+                if viewModel.isLoading {
+                   ProgressView("Searching...")
+                       .padding()
+                }
                 List(viewModel.movies) { movie in
                     HStack {
                         MovieRow(movie: movie)

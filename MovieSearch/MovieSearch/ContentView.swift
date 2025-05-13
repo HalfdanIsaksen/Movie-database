@@ -9,20 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-            Text("Movie Search")
-                        .onAppear {
-                            Task {
-                                await searchMovies(query: "Leon the professional")
-                            }
-                        }
+            TabView {
+                SearchField()
+                    .tabItem {
+                        Label("Search", systemImage: "magnifyingglass")
+                    }
+
+                UserView()
+                    .tabItem {
+                        Label("User", systemImage: "person.circle")
+                    }
+            }
         }
-        .padding()
-    }
 }
 
 #Preview {

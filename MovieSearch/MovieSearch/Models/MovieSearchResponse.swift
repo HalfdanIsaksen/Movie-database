@@ -68,7 +68,7 @@ class MovieSearchViewModel: ObservableObject {
         }
     }
 }
-
+/*
 func searchMovies(query: String, language: String = "en-US") async{
     do{
         guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
@@ -100,4 +100,4 @@ func searchMovies(query: String, language: String = "en-US") async{
         print("Error fetching movie data: \(error)")
     }
     
-}
+}*/

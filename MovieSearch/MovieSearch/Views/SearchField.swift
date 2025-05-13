@@ -9,18 +9,29 @@ import SwiftUI
 
 struct SearchField: View {
     @StateObject private var viewModel = MovieSearchViewModel()
+        @EnvironmentObject var favoritesVM: FavoritesViewModel
 
-       var body: some View {
-           VStack {
-               TextField("Search movies...", text: $viewModel.searchText)
-                   .textFieldStyle(RoundedBorderTextFieldStyle())
-                   .padding()
+        var body: some View {
+            VStack {
+                TextField("Search movies...", text: $viewModel.searchText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
 
-               List(viewModel.movies) { movie in
-                   MovieRow(movie: movie)
-               }
-           }
-       }
+                List(viewModel.movies) { movie in
+                    HStack {
+                        MovieRow(movie: movie)
+                        Spacer()
+                        Button(action: {
+                            favoritesVM.toggleFavorite(movie)
+                        }) {
+                            Image(systemName: favoritesVM.isFavorited(movie) ? "heart.fill" : "heart")
+                                .foregroundColor(.red)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
 }
 #Preview {
     SearchField()

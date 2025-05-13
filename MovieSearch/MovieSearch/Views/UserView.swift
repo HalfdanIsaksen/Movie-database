@@ -8,6 +8,11 @@ import SwiftUI
 
 struct UserView: View {
     var body: some View {
-        Text("UserView")
+        VStack{
+            Text("UserView")
+                .font(.title)
+                .padding(.top)
+            FavoritesView()
+        }
     }
 }

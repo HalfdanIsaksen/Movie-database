@@ -8,19 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject var favoritesVM = FavoritesViewModel()
     var body: some View {
-            TabView {
-                SearchField()
-                    .tabItem {
-                        Label("Search", systemImage: "magnifyingglass")
-                    }
+        TabView {
+        SearchField()
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
 
-                UserView()
-                    .tabItem {
-                        Label("User", systemImage: "person.circle")
-                    }
+        UserView()
+            .tabItem {
+                Label("User", systemImage: "person.circle")
             }
         }
+        .environmentObject(favoritesVM)
+    }
 }
 
 #Preview {

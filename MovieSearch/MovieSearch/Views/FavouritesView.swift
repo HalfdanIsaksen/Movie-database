@@ -7,8 +7,21 @@
 
 import SwiftUI
 
-struct FavouritesView: View {
+struct FavoritesView: View {
+    @EnvironmentObject var favoritesVM: FavoritesViewModel
+
     var body: some View {
-        Text("FavouritesView")
+        VStack {
+            if favoritesVM.favorites.isEmpty {
+                Text("No favorite movies yet.")
+                    .foregroundColor(.gray)
+                    .padding()
+            } else {
+                List(favoritesVM.favorites) { movie in
+                    MovieRow(movie: movie)
+                }
+            }
+        }
+        .navigationTitle("Favorites")
     }
 }

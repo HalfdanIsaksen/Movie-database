@@ -11,16 +11,6 @@ struct MovieSearchResponse: Decodable {
     let results: [Movie]
 }
 
-struct Movie: Identifiable, Codable, Equatable {
-    let id: Int
-    let title: String
-    let original_title: String
-    let overview: String
-    let poster_path: String?
-    let release_date: String
-    let vote_average: Double
-}
-
 class MovieSearchViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var movies: [Movie] = []

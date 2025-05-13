@@ -8,15 +8,19 @@ import Foundation
 import SwiftUI
 
 struct SearchField: View {
-    @State var searchText: String = ""
-    var body: some View {
-        TextField("Search...", text: $searchText)
-            .onChange(of: searchText) { newValue in
-                            Task {
-                                await searchMovies(query: newValue)
-                            }
-                        }
-    }
+    @StateObject private var viewModel = MovieSearchViewModel()
+
+       var body: some View {
+           VStack {
+               TextField("Search movies...", text: $viewModel.searchText)
+                   .textFieldStyle(RoundedBorderTextFieldStyle())
+                   .padding()
+
+               List(viewModel.movies) { movie in
+                   MovieRow(movie: movie)
+               }
+           }
+       }
 }
 #Preview {
     SearchField()

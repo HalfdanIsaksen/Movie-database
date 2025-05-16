@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct UserInfoView: View {
         @Binding var user: UserModel

@@ -7,12 +7,28 @@
 import SwiftUI
 
 struct UserView: View {
-    var body: some View {
-        VStack{
-            Text("UserView")
-                .font(.title)
-                .padding(.top)
-            FavoritesView()
-        }
-    }
+    @StateObject var viewModel: UserViewModel
+       var allMovies: [Movie]
+
+       var body: some View {
+           VStack(alignment: .leading, spacing: 20) {
+               UserInfoView(user: $viewModel.user)
+
+               Divider()
+
+               Text("Favorite Movies")
+                   .font(.title2)
+                   .bold()
+
+               FavoritesView(movies: favoriteMovies)
+
+               Spacer()
+           }
+           .padding()
+           .navigationTitle("User Profile")
+       }
+
+       private var favoriteMovies: [Movie] {
+           allMovies.filter { viewModel.user.favoriteMovieIDs.contains($0.id) }
+       }
 }

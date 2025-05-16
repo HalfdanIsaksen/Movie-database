@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct FavoritesView: View {
-    @EnvironmentObject var favoritesVM: FavoritesViewModel
+    var movies: [Movie]
 
     var body: some View {
         VStack {
-            if favoritesVM.favorites.isEmpty {
+            if movies.isEmpty {
                 Text("No favorite movies yet.")
                     .foregroundColor(.gray)
                     .padding()
             } else {
-                List(favoritesVM.favorites) { movie in
+                List(movies) { movie in
                     MovieRow(movie: movie)
                 }
             }

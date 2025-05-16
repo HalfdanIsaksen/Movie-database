@@ -6,19 +6,20 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct ContentView: View {
     @StateObject var favoritesVM = FavoritesViewModel()
     
     // Dummy user and movies for now
         private let testUser = UserModel(
-            id: <#UUID#>,
+            id: UUID(),
             name: "Halfdan",
             birthday: Date(timeIntervalSince1970: 315532800), // 1980-01-01
             profileImageData: nil,
             favoriteMovieIDs: [1, 2]
         )
-    
+    var testMovies: [Movie] = []
     var body: some View {
         TabView {
         SearchField()
@@ -26,7 +27,7 @@ struct ContentView: View {
                 Label("Search", systemImage: "magnifyingglass")
             }
 
-            UserView(viewModel: UserViewModel(user: testUser), allMovies: [nil])
+            UserView(viewModel: UserViewModel(user: testUser), allMovies: testMovies)
             .tabItem {
                 Label("User", systemImage: "person.circle")
             }

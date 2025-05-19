@@ -10,7 +10,7 @@ import Foundation
 
 struct ContentView: View {
     @StateObject var favoritesVM = FavoritesViewModel()
-    
+    @State private var loggedInUser: UserModel? = nil
     // Dummy user and movies for now
         private let testUser = UserModel(
             id: UUID(),
@@ -21,18 +21,27 @@ struct ContentView: View {
         )
     var testMovies: [Movie] = []
     var body: some View {
-        TabView {
-        SearchField()
-            .tabItem {
-                Label("Search", systemImage: "magnifyingglass")
-            }
+            TabView {
+                SearchField()
+                    .tabItem {
+                        Label("Search", systemImage: "magnifyingglass")
+                    }
 
-            UserView(viewModel: UserViewModel(user: testUser), allMovies: testMovies)
-            .tabItem {
-                Label("User", systemImage: "person.circle")
+                Group {
+                    if let user = loggedInUser {
+                        UserView(viewModel: UserViewModel(user: user), allMovies: testMovies)
+                    } else {
+                        LoginView(onLogin: { user in
+                            self.loggedInUser = user
+                        })
+                    }
+                }
+                .tabItem {
+                    Label("User", systemImage: "person.circle")
+                }
             }
+            .environmentObject(favoritesVM)
         }
-    }
 }
 
 #Preview {

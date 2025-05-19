@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LoginView: View {
-    var onLogin: (User) -> Void
+    var onLogin: (UserModel) -> Void
 
     @State private var name = ""
     @State private var birthday = Date()
@@ -24,7 +24,7 @@ struct LoginView: View {
             DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
 
             Button("Log In / Register") {
-                let newUser = User(name: name, birthday: birthday, profileImageData: nil, favoriteMovieIDs: [])
+                let newUser = UserModel(id: UUID(), name: name, birthday: birthday, profileImageData: nil, favoriteMovieIDs: [])
                 onLogin(newUser)
             }
             .buttonStyle(.borderedProminent)

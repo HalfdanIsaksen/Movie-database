@@ -15,8 +15,8 @@ struct LoginView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Welcome")
-                .font(.largeTitle)
+            Text("Login to see your favorite movies")
+                .font(.title)
 
             TextField("Name", text: $name)
                 .textFieldStyle(RoundedBorderTextFieldStyle())

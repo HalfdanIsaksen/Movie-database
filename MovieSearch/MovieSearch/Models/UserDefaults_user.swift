@@ -10,15 +10,15 @@ import Foundation
 extension UserDefaults {
     private static let userKey = "currentUser"
 
-    func saveUser(_ user: User) {
+    func saveUser(_ user: UserModel) {
         if let data = try? JSONEncoder().encode(user) {
             set(data, forKey: Self.userKey)
         }
     }
 
-    func loadUser() -> User? {
+    func loadUser() -> UserModel? {
         guard let data = data(forKey: Self.userKey),
-              let user = try? JSONDecoder().decode(User.self, from: data) else {
+              let user = try? JSONDecoder().decode(UserModel.self, from: data) else {
             return nil
         }
         return user

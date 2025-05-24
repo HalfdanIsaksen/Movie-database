@@ -34,4 +34,22 @@ class UserViewModel: ObservableObject {
     func updateImage(_ image: UIImage) {
         user.profileImageData = image.jpegData(compressionQuality: 0.8)
     }
+
+    func isFavorited(_ movie: Movie) -> Bool {
+        user.favoriteMovieIDs.contains(movie.id)
+    }
+
+    func toggleFavorite(_ movie: Movie) {
+        if isFavorited(movie) {
+            user.favoriteMovieIDs.removeAll { $0 == movie.id }
+        } else {
+            user.favoriteMovieIDs.append(movie.id)
+        }
+        saveUser()
+    }
+
+    func saveUser() {
+        UserDefaults.standard.saveUser(user)
+    }
 }
+

@@ -28,3 +28,4 @@ extension UserDefaults {
         removeObject(forKey: Self.userKey)
     }
 }
+

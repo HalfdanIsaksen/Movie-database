@@ -4,6 +4,7 @@
 //
 //  Created by Halfdan Albrecht Isaksen on 30/04/2025.
 //
+import Foundation
 
 struct Movie: Identifiable, Codable, Equatable {
     let id: Int
@@ -13,4 +14,8 @@ struct Movie: Identifiable, Codable, Equatable {
     let poster_path: String?
     let release_date: String
     let vote_average: Double
+}
+
+class MovieStored: ObservableObject {
+    @Published var movies: [Movie] = []
 }

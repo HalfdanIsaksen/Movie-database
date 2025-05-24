@@ -5,6 +5,8 @@
 //  Created by Halfdan Albrecht Isaksen on 13/05/2025.
 //
 
+//Might be able to dele this isnt currently used
+
 import SwiftUI
 
 struct FavoritesView: View {

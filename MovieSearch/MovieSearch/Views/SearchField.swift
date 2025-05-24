@@ -10,6 +10,7 @@ import SwiftUI
 struct SearchField: View {
     @StateObject private var viewModel = MovieSearchViewModel()
     @ObservedObject var userViewModel: UserViewModel
+    @EnvironmentObject var movieStore: MovieStored
 
     var body: some View {
         VStack {
@@ -35,6 +36,8 @@ struct SearchField: View {
                 }
                 .padding(.vertical, 4)
             }
+        }.onChange(of: viewModel.movies) {
+            movieStore.movies = viewModel.movies
         }
     }
 }

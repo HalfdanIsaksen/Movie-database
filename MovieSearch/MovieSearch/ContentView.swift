@@ -9,8 +9,19 @@ import SwiftUI
 import Foundation
 
 struct ContentView: View {
-    @StateObject var favoritesVM = FavoritesViewModel()
+
     @State private var loggedInUser: UserModel? = nil
+    
+    @StateObject private var userViewModel = UserViewModel(
+           user: UserDefaults.standard.loadUser() ?? UserModel(
+               id: UUID(),
+               name: "Default",
+               birthday: Date(),
+               profileImageData: nil,
+               favoriteMovieIDs: []
+           )
+       )
+    
     // Dummy user and movies for now
         private let testUser = UserModel(
             id: UUID(),
@@ -21,26 +32,17 @@ struct ContentView: View {
         )
     var testMovies: [Movie] = []
     var body: some View {
-            TabView {
-                SearchField()
-                    .tabItem {
-                        Label("Search", systemImage: "magnifyingglass")
-                    }
-
-                Group {
-                    if let user = loggedInUser {
-                        UserView(viewModel: UserViewModel(user: user), allMovies: testMovies)
-                    } else {
-                        LoginView(onLogin: { user in
-                            self.loggedInUser = user
-                        })
-                    }
+        TabView {
+            SearchField(userViewModel: userViewModel)
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
                 }
+
+            UserView(viewModel: userViewModel, allMovies: testMovies)
                 .tabItem {
                     Label("User", systemImage: "person.circle")
                 }
-            }
-            .environmentObject(favoritesVM)
+        }
         }
 }
 

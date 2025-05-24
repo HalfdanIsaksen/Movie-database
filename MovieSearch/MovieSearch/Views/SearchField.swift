@@ -9,34 +9,46 @@ import SwiftUI
 
 struct SearchField: View {
     @StateObject private var viewModel = MovieSearchViewModel()
-        @EnvironmentObject var favoritesVM: FavoritesViewModel
+    @ObservedObject var userViewModel: UserViewModel
 
-        var body: some View {
-            VStack {
-                TextField("Search movies...", text: $viewModel.searchText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+    var body: some View {
+        VStack {
+            TextField("Search movies...", text: $viewModel.searchText)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+
+            if viewModel.isLoading {
+                ProgressView("Searching...")
                     .padding()
-                
-                if viewModel.isLoading {
-                   ProgressView("Searching...")
-                       .padding()
-                }
-                List(viewModel.movies) { movie in
-                    HStack {
-                        MovieRow(movie: movie)
-                        Spacer()
-                        Button(action: {
-                            favoritesVM.toggleFavorite(movie)
-                        }) {
-                            Image(systemName: favoritesVM.isFavorited(movie) ? "heart.fill" : "heart")
-                                .foregroundColor(.red)
-                        }
+            }
+
+            List(viewModel.movies) { movie in
+                HStack {
+                    MovieRow(movie: movie)
+                    Spacer()
+                    Button(action: {
+                        userViewModel.toggleFavorite(movie)
+                    }) {
+                        Image(systemName: userViewModel.isFavorited(movie) ? "heart.fill" : "heart")
+                            .foregroundColor(.red)
                     }
-                    .padding(.vertical, 4)
                 }
+                .padding(.vertical, 4)
             }
         }
+    }
 }
+
 #Preview {
-    SearchField()
+    let mockUser = UserModel(
+        id: UUID(),
+        name: "Preview User",
+        birthday: Date(),
+        profileImageData: nil,
+        favoriteMovieIDs: []
+    )
+
+    let mockViewModel = UserViewModel(user: mockUser)
+
+    return SearchField(userViewModel: mockViewModel)
 }

@@ -8,20 +8,24 @@ import SwiftUI
 
 struct MovieRow: View {
     let movie: Movie
-    
+
     var body: some View {
         HStack(alignment: .top) {
-            if let path = movie.poster_path,
-               let url = URL(string: "https://image.tmdb.org/t/p/w200\(path)") {
-                AsyncImage(url: url) { image in
-                    image.resizable()
-                } placeholder: {
-                    ProgressView()
+            Group {
+                if let path = movie.poster_path,
+                   let url = URL(string: "https://image.tmdb.org/t/p/w200\(path)") {
+                    AsyncImage(url: url) { image in
+                        image.resizable()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                } else {
+                    Color.gray // Fallback for missing image
                 }
-                .frame(width: 60, height: 90)
-                .cornerRadius(8)
             }
-            
+            .frame(width: 60, height: 90)
+            .cornerRadius(8)
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(movie.title)
                     .font(.headline)

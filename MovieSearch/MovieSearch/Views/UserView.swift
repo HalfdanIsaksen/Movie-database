@@ -29,6 +29,9 @@ struct UserView: View {
        }
 
        private var favoriteMovies: [Movie] {
-           allMovies.filter { viewModel.user.favoriteMovieIDs.contains($0.id) }
+           print("All movies count: \(allMovies.count)")
+
+           return allMovies.filter { viewModel.user.favoriteMovieIDs.contains($0.id) }
+           
        }
 }

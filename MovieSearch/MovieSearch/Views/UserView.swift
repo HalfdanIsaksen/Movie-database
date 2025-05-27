@@ -20,7 +20,7 @@ struct UserView: View {
                    .font(.title2)
                    .bold()
 
-               FavoritesView(movies: allMovies)
+               FavoritesView(movies: favoriteMovies)
 
                Spacer()
            }

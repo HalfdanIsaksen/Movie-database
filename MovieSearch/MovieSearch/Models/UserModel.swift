@@ -19,9 +19,23 @@ struct UserModel: Identifiable, Codable {
 class UserViewModel: ObservableObject {
     @Published var user: UserModel
 
-    init(user: UserModel) {
-        self.user = user
-    }
+    init() {
+           if let savedUser = UserDefaults.standard.loadUser() {
+               self.user = savedUser
+           } else {
+               self.user = UserModel(
+                   id: UUID(),
+                   name: "Guest",
+                   birthday: Date(),
+                   profileImageData: nil,
+                   favoriteMovieIDs: []
+               )
+           }
+       }
+
+       init(user: UserModel) {
+           self.user = user
+       }
 
     var profileImage: Image {
         if let data = user.profileImageData, let uiImage = UIImage(data: data) {

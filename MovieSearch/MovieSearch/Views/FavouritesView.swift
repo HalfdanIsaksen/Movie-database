@@ -11,7 +11,7 @@ import SwiftUI
 
 struct FavoritesView: View {
     var movies: [Movie]
-
+    @StateObject var viewModel: UserViewModel
     var body: some View {
         VStack {
             if movies.isEmpty {
@@ -20,7 +20,9 @@ struct FavoritesView: View {
                     .padding()
             } else {
                 List(movies) { movie in
-                    MovieRow(movie: movie)
+                    NavigationLink(destination: MovieView(movie: movie, userViewModel: viewModel)) {
+                        MovieRow(movie: movie)
+                    }
                 }
             }
         }

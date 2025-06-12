@@ -13,39 +13,32 @@ struct SearchField: View {
     @EnvironmentObject var movieStore: MovieStored
 
     var body: some View {
-        VStack {
-            TextField("Search movies...", text: $viewModel.searchText)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            if viewModel.isLoading {
-                ProgressView("Searching...")
+        NavigationView {
+            VStack {
+                TextField("Search movies...", text: $viewModel.searchText)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
-            }
 
-            List(viewModel.movies) { movie in
-                HStack {
-                    MovieRow(movie: movie)
-                    Spacer()
-                    Button(action: {
-                        userViewModel.toggleFavorite(movie)
-                    }) {
-                        Image(systemName: userViewModel.isFavorited(movie) ? "heart.fill" : "heart")
-                            .foregroundColor(.red)
+                if viewModel.isLoading {
+                    ProgressView("Searching...")
+                        .padding()
+                }
+
+                List(viewModel.movies) { movie in
+                    NavigationLink(destination: MovieView(movie: movie, userViewModel: userViewModel)) {
+                        MovieRow(movie: movie)
                     }
                 }
-                .padding(.vertical, 4)
             }
-        }.onChange(of: viewModel.movies) {
-            for movie in viewModel.movies {
-                if userViewModel.isFavorited(movie),
-                   !userViewModel.favoriteMovies.contains(where: { $0.id == movie.id }) {
-                    userViewModel.favoriteMovies.append(movie)
+            .onChange(of: viewModel.movies) {
+                for movie in viewModel.movies {
+                    if userViewModel.isFavorited(movie),
+                       !userViewModel.favoriteMovies.contains(where: { $0.id == movie.id }) {
+                        userViewModel.favoriteMovies.append(movie)
+                    }
                 }
+                movieStore.movies = viewModel.movies
             }
-
-            // Optional: Add to global movie store
-            movieStore.movies = viewModel.movies
         }
 
     }

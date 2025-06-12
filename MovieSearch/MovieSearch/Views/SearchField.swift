@@ -37,8 +37,17 @@ struct SearchField: View {
                 .padding(.vertical, 4)
             }
         }.onChange(of: viewModel.movies) {
+            for movie in viewModel.movies {
+                if userViewModel.isFavorited(movie),
+                   !userViewModel.favoriteMovies.contains(where: { $0.id == movie.id }) {
+                    userViewModel.favoriteMovies.append(movie)
+                }
+            }
+
+            // Optional: Add to global movie store
             movieStore.movies = viewModel.movies
         }
+
     }
 }
 

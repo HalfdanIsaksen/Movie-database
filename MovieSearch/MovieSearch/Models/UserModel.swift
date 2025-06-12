@@ -18,6 +18,7 @@ struct UserModel: Identifiable, Codable {
 
 class UserViewModel: ObservableObject {
     @Published var user: UserModel
+    @Published var favoriteMovies: [Movie] = []
 
     init() {
            if let savedUser = UserDefaults.standard.loadUser() {
@@ -56,11 +57,16 @@ class UserViewModel: ObservableObject {
     func toggleFavorite(_ movie: Movie) {
         if isFavorited(movie) {
             user.favoriteMovieIDs.removeAll { $0 == movie.id }
+            favoriteMovies.removeAll { $0.id == movie.id }
         } else {
             user.favoriteMovieIDs.append(movie.id)
+            if !favoriteMovies.contains(where: { $0.id == movie.id }) {
+                favoriteMovies.append(movie)
+            }
         }
         saveUser()
     }
+
 
     func saveUser() {
         UserDefaults.standard.saveUser(user)

@@ -10,7 +10,7 @@ import Foundation
 
 struct ContentView: View {
 
-    @State private var loggedInUser: UserModel? = nil
+    @State private var loggedInUser: UserModel? = UserDefaults.standard.loadUser()
     
     @StateObject private var userViewModel = UserViewModel(
            user: UserDefaults.standard.loadUser() ?? UserModel(

@@ -26,6 +26,7 @@ struct UserView: View {
            }
            .padding()
            .navigationTitle("User Profile")
+           
        }
 
        private var favoriteMovies: [Movie] {

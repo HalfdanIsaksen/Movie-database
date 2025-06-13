@@ -19,7 +19,9 @@ struct UserModel: Identifiable, Codable {
 class UserViewModel: ObservableObject {
     @Published var user: UserModel
     @Published var favoriteMovies: [Movie] = []
-
+    
+    private let favoriteMovieKey = "favoriteMovies"
+    
     init() {
            if let savedUser = UserDefaults.standard.loadUser() {
                self.user = savedUser
@@ -34,9 +36,10 @@ class UserViewModel: ObservableObject {
            }
        }
 
-       init(user: UserModel) {
-           self.user = user
-       }
+        init(user: UserModel) {
+            self.user = user
+            loadFavoriteMovies()
+        }
 
     var profileImage: Image {
         if let data = user.profileImageData, let uiImage = UIImage(data: data) {
@@ -65,8 +68,24 @@ class UserViewModel: ObservableObject {
             }
         }
         saveUser()
+        saveFavoriteMovies()
     }
 
+    func saveFavoriteMovies() {
+        if let encoded = try? JSONEncoder().encode(favoriteMovies) {
+            UserDefaults.standard.set(encoded, forKey: favoriteMovieKey)
+        }
+    }
+
+    func loadFavoriteMovies() {
+        if let data = UserDefaults.standard.data(forKey: favoriteMovieKey),
+           let decoded = try? JSONDecoder().decode([Movie].self, from: data) {
+            favoriteMovies = decoded
+
+            // Also update the IDs to stay consistent
+            user.favoriteMovieIDs = decoded.map { $0.id }
+        }
+    }
 
     func saveUser() {
         UserDefaults.standard.saveUser(user)

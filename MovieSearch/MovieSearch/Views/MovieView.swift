@@ -45,16 +45,28 @@ struct MovieView: View {
                     .padding(.top)
 
                 Button(action: {
-                    userViewModel.toggleFavorite(movie)
+                    withAnimation(.easeInOut) {
+                        userViewModel.toggleFavorite(movie)
+                    }
                 }) {
-                    Label(userViewModel.isFavorited(movie) ? "Remove from Favorites" : "Add to Favorites",
-                          systemImage: userViewModel.isFavorited(movie) ? "heart.fill" : "heart")
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red.opacity(0.2))
-                        .cornerRadius(10)
+                    Label(
+                        title: {
+                            Text(userViewModel.isFavorited(movie) ? "Remove from Favorites" : "Add to Favorites")
+                                .transition(.opacity) // Fades the text
+                        },
+                        icon: {
+                            Image(systemName: userViewModel.isFavorited(movie) ? "heart.fill" : "heart")
+                                .scaleEffect(userViewModel.isFavorited(movie) ? 1.2 : 1.0)
+                                .animation(.easeInOut, value: userViewModel.isFavorited(movie))
+                        }
+                    )
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red.opacity(0.2))
+                    .cornerRadius(10)
                 }
                 .foregroundColor(.red)
+
             }
             .padding()
         }

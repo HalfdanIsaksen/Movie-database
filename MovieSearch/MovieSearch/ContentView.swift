@@ -33,17 +33,21 @@ struct ContentView: View {
     var testMovies: [Movie] = []*/
     var body: some View {
         TabView {
-            SearchField(userViewModel: userViewModel)
-                .environmentObject(movieStore)
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
+            NavigationView {
+                SearchField(userViewModel: userViewModel)
+                    .environmentObject(movieStore)
+            }
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
 
-            UserView(viewModel: userViewModel, allMovies: movieStore.movies)
-                .environmentObject(movieStore)
-                .tabItem {
-                    Label("User", systemImage: "person.circle")
-                }
+            NavigationView {
+                UserView(viewModel: userViewModel, allMovies: movieStore.movies)
+                    .environmentObject(movieStore)
+            }
+            .tabItem {
+                Label("User", systemImage: "person.circle")
+            }
         }
     }
 }

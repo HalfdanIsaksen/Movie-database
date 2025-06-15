@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MovieColumn: View{
     var body: some View {
-        HStack{
+        HStack(alignment: .top){
             
         }
     }

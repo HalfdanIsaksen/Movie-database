@@ -37,7 +37,7 @@ struct ContentView: View {
                 ExploreView()
             }
             .tabItem {
-                Label("Home", systemImage: "House")
+                Label("Home", systemImage: "house")
             }
             NavigationView {
                 SearchField(userViewModel: userViewModel)

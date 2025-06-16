@@ -8,9 +8,26 @@
 import SwiftUI
 
 struct MovieColumn: View{
-    var body: some View {
-        HStack(alignment: .top){
-            
+    let title: String
+        let movies: [Movie]
+        let userViewModel: UserViewModel
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.headline)
+                    .padding(.leading, 8)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(movies) { movie in
+                            NavigationLink(destination: MovieView(movie: movie, userViewModel: userViewModel)) {
+                                MovieCard(movie: movie)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+            }
         }
-    }
 }

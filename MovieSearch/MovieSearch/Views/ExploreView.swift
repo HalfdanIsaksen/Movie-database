@@ -12,6 +12,6 @@ struct ExploreView: View {
     let userViewModel: UserViewModel
     
     var body: some View {
-        MovieColumn(title: "Recommended for You", movies: someMovieList, userViewModel: viewModel)
+        MovieColumn(title: "Recommended for You", movies: movies, userViewModel: userViewModel)
     }
 }

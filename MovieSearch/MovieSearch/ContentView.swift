@@ -34,7 +34,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationView{
-                ExploreView()
+                ExploreView(movies: <#T##[Movie]#>, userViewModel: userViewModel)
             }
             .tabItem {
                 Label("Home", systemImage: "house")

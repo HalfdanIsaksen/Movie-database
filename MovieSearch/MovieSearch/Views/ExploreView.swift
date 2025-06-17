@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct ExploreView: View {
+    let movies: [Movie]
+    let userViewModel: UserViewModel
+    
     var body: some View {
-        Text("Explore")
+        MovieColumn(title: "Recommended for You", movies: someMovieList, userViewModel: viewModel)
     }
 }

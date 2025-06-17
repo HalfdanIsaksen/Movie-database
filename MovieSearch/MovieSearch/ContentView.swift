@@ -22,6 +22,7 @@ struct ContentView: View {
            )
        )
     @StateObject private var movieStore = MovieStored()
+    
     // Dummy user and movies for now
        /* private let testUser = UserModel(
             id: UUID(),
@@ -32,9 +33,10 @@ struct ContentView: View {
         )
     var testMovies: [Movie] = []*/
     var body: some View {
+        let topFavorites = Array(userViewModel.favoriteMovies.prefix(3))
         TabView {
             NavigationView{
-                ExploreView(movies: <#T##[Movie]#>, userViewModel: userViewModel)
+                ExploreView(movies: topFavorites, userViewModel: userViewModel)
             }
             .tabItem {
                 Label("Home", systemImage: "house")

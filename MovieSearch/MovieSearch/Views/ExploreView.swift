@@ -12,7 +12,9 @@ struct ExploreView: View {
     let userViewModel: UserViewModel
     
     var body: some View {
-        VStack
-        MovieColumn(title: "Recommended for You", movies: movies, userViewModel: userViewModel)
+        VStack(alignment: .leading){
+            MovieColumn(title: "Recommended for You", movies: movies, userViewModel: userViewModel)
+        }
+        .navigationTitle("Home")
     }
 }

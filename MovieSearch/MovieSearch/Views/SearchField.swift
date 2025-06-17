@@ -13,7 +13,6 @@ struct SearchField: View {
     @EnvironmentObject var movieStore: MovieStored
 
     var body: some View {
-        NavigationView {
             VStack {
                 TextField("Search movies...", text: $viewModel.searchText)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -39,7 +38,8 @@ struct SearchField: View {
                 }
                 movieStore.movies = viewModel.movies
             }
-        }
+        .navigationTitle("Explore")
+        
 
     }
 }

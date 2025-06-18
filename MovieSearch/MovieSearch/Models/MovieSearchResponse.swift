@@ -99,7 +99,7 @@ class MovieSearchViewModel: ObservableObject {
         do{
             guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
                 print("API Key missing.")
-                return
+                return []
             }
             
             let url = URL(string: "https://api.themoviedb.org/3/trending/movie/day")!
@@ -123,6 +123,7 @@ class MovieSearchViewModel: ObservableObject {
             } else {
                 print("Fetch error: \(error)")
             }
+            return []
         }
     }
 }

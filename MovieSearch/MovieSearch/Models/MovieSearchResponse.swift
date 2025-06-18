@@ -95,11 +95,10 @@ class MovieSearchViewModel: ObservableObject {
     }
     
     func trendingMovies() async throws -> [Movie] {
-        
-        do{
+        do {
             guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
                 print("API Key missing.")
-                return []
+                return [] // <-- return an empty array instead of nothing
             }
             
             let url = URL(string: "https://api.themoviedb.org/3/trending/movie/day")!
@@ -117,13 +116,19 @@ class MovieSearchViewModel: ObservableObject {
             
             let (data, _) = try await URLSession.shared.data(for: request)
             print(String(decoding: data, as: UTF8.self))
-        }catch {
+            
+            // Decode JSON into [Movie]
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(MovieSearchResponse.self, from: data)
+            return response.results
+        } catch {
             if (error as? URLError)?.code == .cancelled {
                 print("Search cancelled for favorited movies")
             } else {
                 print("Fetch error: \(error)")
             }
-            return []
+            return [] // <-- ensure function always returns a [Movie]
         }
     }
+
 }

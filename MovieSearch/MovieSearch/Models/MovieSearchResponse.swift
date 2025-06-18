@@ -93,4 +93,36 @@ class MovieSearchViewModel: ObservableObject {
             }
         }
     }
+    
+    func trendingMovies() async throws -> [Movie] {
+        
+        do{
+            guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
+                print("API Key missing.")
+                return
+            }
+            
+            let url = URL(string: "https://api.themoviedb.org/3/trending/movie/day")!
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            let queryItems: [URLQueryItem] = [
+                URLQueryItem(name: "language", value: "en-US"),
+            ]
+            components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+            
+            var request = URLRequest(url: components.url!)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 90
+            request.setValue("application/json", forHTTPHeaderField: "accept")
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            
+            let (data, _) = try await URLSession.shared.data(for: request)
+            print(String(decoding: data, as: UTF8.self))
+        }catch {
+            if (error as? URLError)?.code == .cancelled {
+                print("Search cancelled for favorited movies")
+            } else {
+                print("Fetch error: \(error)")
+            }
+        }
+    }
 }

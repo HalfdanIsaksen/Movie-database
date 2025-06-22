@@ -9,17 +9,20 @@ import SwiftUI
 
 struct ExploreView: View {
     let recommendedMovies: [Movie]
-    @State var trendingMovies: [Movie]
     let userViewModel: UserViewModel
     let movieSearchModel: MovieSearchViewModel
-    
+
+    @State private var trendingMovies: [Movie] = []
+
     var body: some View {
-        trendingMovies = movieSearchModel.trendingMovies()
-        
         VStack(alignment: .leading){
             MovieColumn(title: "Recommended for You", movies: recommendedMovies, userViewModel: userViewModel)
             MovieColumn(title: "Trending", movies: trendingMovies, userViewModel: userViewModel)
         }
         .navigationTitle("Home")
+        .task {
+            // Run when the view appears
+            trendingMovies = (try? await movieSearchModel.trendingMovies()) ?? []
+        }
     }
 }

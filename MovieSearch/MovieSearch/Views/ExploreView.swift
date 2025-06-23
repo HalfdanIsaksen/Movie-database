@@ -8,15 +8,15 @@
 import SwiftUI
 
 struct ExploreView: View {
-    let recommendedMovies: [Movie]
-    let userViewModel: UserViewModel
-    let movieSearchModel: MovieSearchViewModel
+    //let recommendedMovies: [Movie]
+    @ObservedObject var userViewModel: UserViewModel
+    @StateObject private var movieSearchModel = MovieSearchViewModel()
 
     @State private var trendingMovies: [Movie] = []
 
     var body: some View {
         VStack(alignment: .leading){
-            MovieColumn(title: "Recommended for You", movies: recommendedMovies, userViewModel: userViewModel)
+            //MovieColumn(title: "Recommended for You", movies: recommendedMovies, userViewModel: userViewModel)
             MovieColumn(title: "Trending", movies: trendingMovies, userViewModel: userViewModel)
         }
         .navigationTitle("Home")

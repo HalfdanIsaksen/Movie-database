@@ -33,10 +33,10 @@ struct ContentView: View {
         )
     var testMovies: [Movie] = []*/
     var body: some View {
-        let topFavorites = Array(userViewModel.favoriteMovies.prefix(3))
+        //let topFavorites = Array(userViewModel.favoriteMovies.prefix(3))
         TabView {
             NavigationView{
-                ExploreView(movies: topFavorites, userViewModel: userViewModel)
+                ExploreView(userViewModel: userViewModel)
             }
             .tabItem {
                 Label("Home", systemImage: "house")

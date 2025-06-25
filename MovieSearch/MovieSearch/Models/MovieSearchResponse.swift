@@ -168,8 +168,12 @@ class MovieSearchViewModel: ObservableObject {
             return []
         }
     }
-    func topratedMovies() -> [Movie] {
+    func topratedMovies() async -> [Movie] {
         do{
+            guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
+                print("API Key missing.")
+                return [] // <-- return an empty array instead of nothing
+            }
             let url = URL(string: "https://api.themoviedb.org/3/movie/top_rated")!
             var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
             let queryItems: [URLQueryItem] = [
@@ -180,22 +184,24 @@ class MovieSearchViewModel: ObservableObject {
             
             var request = URLRequest(url: components.url!)
             request.httpMethod = "GET"
-            request.timeoutInterval = 10
-            request.allHTTPHeaderFields = [
-                "accept": "application/json",
-                "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2YWQ3YmNlYTAwMTIzZWQ2YTMwZTc4MjE4ODBlMzNkMSIsIm5iZiI6MTc0NjAyMDYxNS43NTksInN1YiI6IjY4MTIyOTA3YzZjMDIxZWVmNzE0NTczOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VGBXTpvLzXfND_PpQR86t-WQZy2yFutPjp2sqqktZYU"
-            ]
+            request.timeoutInterval = 90
+            request.setValue("application/json", forHTTPHeaderField: "accept")
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
             
             let (data, _) = try await URLSession.shared.data(for: request)
             print(String(decoding: data, as: UTF8.self))
+            
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(MovieSearchResponse.self, from: data)
+            return response.results
+        }catch{
+            if (error as? URLError)?.code == .cancelled {
+                print("Search cancelled for favorited movies")
+            } else {
+                print("Fetch error: \(error)")
+            }
+            return []
         }
-    }catch{
-        if (error as? URLError)?.code == .cancelled {
-            print("Search cancelled for favorited movies")
-        } else {
-            print("Fetch error: \(error)")
-        }
-        return []
     }
 
 }

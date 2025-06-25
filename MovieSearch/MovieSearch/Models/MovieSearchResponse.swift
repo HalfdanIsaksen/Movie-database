@@ -168,7 +168,7 @@ class MovieSearchViewModel: ObservableObject {
             return []
         }
     }
-    func topratedMovies() async -> [Movie] {
+    func topratedMovies() async throws -> [Movie] {
         do{
             guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
                 print("API Key missing.")

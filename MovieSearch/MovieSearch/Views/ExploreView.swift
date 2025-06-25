@@ -28,7 +28,7 @@ struct ExploreView: View {
             // Run when the view appears
             trendingMovies = (try? await movieSearchModel.trendingMovies()) ?? []
             popularMovies  = (try? await movieSearchModel.popularMovies()) ?? []
-            topRatedMovies = (try? await movieSearchModel.popularMovies() ?? [])
+            topRatedMovies = (try? await movieSearchModel.popularMovies()) ?? []
             
         }
     }

@@ -236,5 +236,4 @@ class MovieSearchViewModel: ObservableObject {
             return []
         }
     }
-
 }

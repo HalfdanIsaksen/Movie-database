@@ -244,7 +244,7 @@ class MovieSearchViewModel: ObservableObject {
                 print("API Key missing.")
                 return []
             }
-            let url = URL(string: "https://api.themoviedb.org/3/movie/755898/recommendations")!
+            let url = URL(string: "https://api.themoviedb.org/3/movie/\(id)/recommendations")!
             var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
             let queryItems: [URLQueryItem] = [
               URLQueryItem(name: "language", value: "en-US"),

@@ -203,6 +203,7 @@ class MovieSearchViewModel: ObservableObject {
             return []
         }
     }
+    
     func upcomingMovies() async throws-> [Movie] {
         do{
             guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
@@ -235,5 +236,27 @@ class MovieSearchViewModel: ObservableObject {
             }
             return []
         }
+    }
+    
+    func recommendedMovies() async throws -> [Movie] {
+        
+        let url = URL(string: "https://api.themoviedb.org/3/movie/755898/recommendations")!
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        let queryItems: [URLQueryItem] = [
+          URLQueryItem(name: "language", value: "en-US"),
+          URLQueryItem(name: "page", value: "1"),
+        ]
+        components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.allHTTPHeaderFields = [
+          "accept": "application/json",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2YWQ3YmNlYTAwMTIzZWQ2YTMwZTc4MjE4ODBlMzNkMSIsIm5iZiI6MTc0NjAyMDYxNS43NTksInN1YiI6IjY4MTIyOTA3YzZjMDIxZWVmNzE0NTczOCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VGBXTpvLzXfND_PpQR86t-WQZy2yFutPjp2sqqktZYU"
+        ]
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        print(String(decoding: data, as: UTF8.self))
     }
 }

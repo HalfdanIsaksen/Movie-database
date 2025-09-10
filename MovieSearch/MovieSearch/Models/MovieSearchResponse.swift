@@ -13,86 +13,121 @@ struct MovieSearchResponse: Decodable {
 
 class MovieSearchViewModel: ObservableObject {
     @Published var searchText = ""
-    @Published var movies: [Movie] = []
-    @Published var isLoading = false
-    
-    private var cache: [String: [Movie]] = [:]
+       @Published var movies: [Movie] = []
+       @Published var isLoading = false
 
-    private var searchTask: Task<Void, Never>? = nil
+       // NEW
+       @Published var recSections: [RecommendationSection] = []
+       @Published var recentQueries: [String] = UserDefaults.standard.stringArray(forKey: "recentQueries") ?? []
 
-    init() {
-        $searchText
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .removeDuplicates()
-            .sink { [weak self] newQuery in
-                self?.startSearch(query: newQuery)
-            }
-            .store(in: &cancellables)
-    }
+       private var cache: [String: [Movie]] = [:]
+       private var searchTask: Task<Void, Never>? = nil
+       private var cancellables = Set<AnyCancellable>()
 
-    private var cancellables = Set<AnyCancellable>()
+       init() {
+           $searchText
+               .debounce(for: .milliseconds(450), scheduler: DispatchQueue.main)
+               .removeDuplicates()
+               .sink { [weak self] query in
+                   guard let self else { return }
+                   if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                       self.movies = []
+                       self.loadRecommendations()           // <— show “discover” when empty
+                   } else {
+                       self.startSearch(query: query)
+                   }
+               }
+               .store(in: &cancellables)
 
-    private func startSearch(query: String) {
-        guard !query.isEmpty else {
-            movies = []
-            return
-        }
+           // initial load for first render
+           loadRecommendations()
+       }
 
-        // Cancel any in-progress search
-        searchTask?.cancel()
+       // MARK: - Recents
+       func addRecentQuery(_ query: String) {
+           let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
+           guard !q.isEmpty else { return }
+           var set = LinkedHashSet(recentQueries)             // preserves order, removes dups
+           set.prepend(q)
+           recentQueries = Array(set.prefix(10))
+           UserDefaults.standard.set(recentQueries, forKey: "recentQueries")
+       }
 
-        // Launch a new task
-        searchTask = Task {
-            await self.searchMovies(query: query)
-        }
-    }
+       func removeRecentQuery(_ query: String) {
+           recentQueries.removeAll { $0.caseInsensitiveCompare(query) == .orderedSame }
+           UserDefaults.standard.set(recentQueries, forKey: "recentQueries")
+       }
 
-    func searchMovies(query: String) async {
-        if let cached = cache[query.lowercased()] {
-                await MainActor.run {
-                    self.movies = cached
-                }
-                return
-            }
+       // MARK: - Search
+       private func startSearch(query: String) {
+           // cancel any in-progress search
+           searchTask?.cancel()
+           searchTask = Task { await self.searchMovies(query: query) }
+       }
 
-            await MainActor.run { self.isLoading = true }
-            defer { Task { await MainActor.run { self.isLoading = false } } }
-        
-        do {
-            guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else {
-                print("API Key missing.")
-                return
-            }
+       @MainActor private func setLoading(_ v: Bool) { isLoading = v }
 
-            var components = URLComponents(string: "https://api.themoviedb.org/3/search/movie")!
-            components.queryItems = [
-                URLQueryItem(name: "query", value: query),
-                URLQueryItem(name: "include_adult", value: "false"),
-                URLQueryItem(name: "language", value: "en-US"),
-                URLQueryItem(name: "page", value: "1")
-            ]
+       func searchMovies(query: String) async {
+           let key = query.lowercased()
+           if let cached = cache[key] {
+               await MainActor.run { self.movies = cached }
+               return
+           }
 
-            var request = URLRequest(url: components.url!)
-            request.httpMethod = "GET"
-            request.timeoutInterval = 90
-            request.setValue("application/json", forHTTPHeaderField: "accept")
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+           await setLoading(true)
+           defer { Task { await self.setLoading(false) } }
 
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let response = try JSONDecoder().decode(MovieSearchResponse.self, from: data)
+           do {
+               guard let apiKey = Bundle.main.infoDictionary?["TMDB_API_KEY"] as? String else { return }
+               var components = URLComponents(string: "https://api.themoviedb.org/3/search/movie")!
+               components.queryItems = [
+                   .init(name: "query", value: query),
+                   .init(name: "include_adult", value: "false"),
+                   .init(name: "language", value: "en-US"),
+                   .init(name: "page", value: "1")
+               ]
+               var request = URLRequest(url: components.url!)
+               request.httpMethod = "GET"
+               request.setValue("application/json", forHTTPHeaderField: "accept")
+               request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 
-            await MainActor.run {
-                self.movies = response.results
-                self.cache[query.lowercased()] = response.results // <-- Save to cache
-            }
-        } catch {
-            if (error as? URLError)?.code == .cancelled {
-                print("Search cancelled for query: \(query)")
-            } else {
-                print("Fetch error: \(error)")
-            }
-        }
-    }
+               let (data, _) = try await URLSession.shared.data(for: request)
+               let response = try JSONDecoder().decode(MovieSearchResponse.self, from: data)
+
+               await MainActor.run {
+                   self.movies = response.results
+                   self.cache[key] = response.results
+                   self.addRecentQuery(query)                 // <— store successful search
+               }
+           } catch {
+               if (error as? URLError)?.code != .cancelled { print("Fetch error:", error) }
+           }
+       }
+
+       // MARK: - Recommendations when empty
+       func loadRecommendations() {
+           // Avoid spinners bouncing when returning from search to idle
+           searchTask?.cancel()
+
+           Task {
+               await setLoading(true)
+               defer { Task { await self.setLoading(false) } }
+
+               async let trending = trendingMovies()
+               async let popular  = popularMovies()
+               async let top      = topratedMovies()
+               async let upcoming = upcomingMovies()
+
+               let sections = await [
+                   RecommendationSection(title: "Trending Today", movies: (try? trending) ?? []),
+                   RecommendationSection(title: "Popular Now",    movies: (try? popular)  ?? []),
+                   RecommendationSection(title: "Top Rated",       movies: (try? top)      ?? []),
+                   RecommendationSection(title: "Coming Soon",     movies: (try? upcoming) ?? []),
+               ].filter { !$0.movies.isEmpty }
+
+               await MainActor.run { self.recSections = sections }
+           }
+       }
     
     func trendingMovies() async throws -> [Movie] {
         do {
@@ -273,4 +308,15 @@ class MovieSearchViewModel: ObservableObject {
             return []
         }
     }
+}
+
+fileprivate struct LinkedHashSet<Element: Hashable>: Sequence {
+    private var seen = Set<Element>()
+    private var items: [Element] = []
+    init(_ array: [Element]) { array.forEach { append($0) } }
+    mutating func append(_ e: Element) { if seen.insert(e).inserted { items.append(e) } }
+    mutating func prepend(_ e: Element) { if seen.insert(e).inserted { items.insert(e, at: 0) }
+        else { items.removeAll { $0 == e }; items.insert(e, at: 0) } }
+    func prefix(_ n: Int) -> [Element] { Array(items.prefix(n)) }
+    func makeIterator() -> IndexingIterator<[Element]> { items.makeIterator() }
 }

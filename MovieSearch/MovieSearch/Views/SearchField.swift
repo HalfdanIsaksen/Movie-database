@@ -39,8 +39,6 @@ struct SearchField: View {
                 movieStore.movies = viewModel.movies
             }
         .navigationTitle("Explore")
-        
-
     }
 }
 

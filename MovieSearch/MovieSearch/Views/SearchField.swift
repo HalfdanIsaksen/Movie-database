@@ -92,7 +92,7 @@ struct FlexibleChipWrap: View {
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], spacing: 8) {
-            ForEach(items.prefix(5), id: \.self) { q in
+            ForEach(items.prefix(4), id: \.self) { q in
                 HStack(spacing: 6) {
                     Button(q) { onTap(q) }
                         .buttonStyle(.bordered)

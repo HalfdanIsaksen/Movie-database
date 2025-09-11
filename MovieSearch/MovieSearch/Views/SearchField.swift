@@ -92,14 +92,13 @@ struct FlexibleChipWrap: View {
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 90), spacing: 8)], spacing: 8) {
-            ForEach(items, id: \.self) { q in
+            ForEach(items.prefix(5), id: \.self) { q in
                 HStack(spacing: 6) {
                     Button(q) { onTap(q) }
                         .buttonStyle(.bordered)
                         .controlSize(.small)
-                    Button(role: .destructive) {
-                        onDelete(q)
-                    } label: {
+
+                    Button(role: .destructive) { onDelete(q) } label: {
                         Image(systemName: "xmark.circle.fill")
                     }
                     .buttonStyle(.plain)

@@ -105,7 +105,7 @@ class MovieSearchViewModel: ObservableObject {
        }
 
        // MARK: - Recommendations when empty
-       func loadRecommendations() {
+    func loadRecommendations(movies : [Movie]) {
            // Avoid spinners bouncing when returning from search to idle
            searchTask?.cancel()
 
@@ -117,12 +117,13 @@ class MovieSearchViewModel: ObservableObject {
                async let popular  = popularMovies()
                async let top      = topratedMovies()
                async let upcoming = upcomingMovies()
-
+               
+               for movie in movies{
+                   movie.id
+               }
+               async let recommendations = recommendedMovies(id: 1)
                let sections = await [
-                   RecommendationSection(title: "Trending Today", movies: (try? trending) ?? []),
-                   RecommendationSection(title: "Popular Now",    movies: (try? popular)  ?? []),
-                   RecommendationSection(title: "Top Rated",       movies: (try? top)      ?? []),
-                   RecommendationSection(title: "Coming Soon",     movies: (try? upcoming) ?? []),
+                   
                ].filter { !$0.movies.isEmpty }
 
                await MainActor.run { self.recSections = sections }

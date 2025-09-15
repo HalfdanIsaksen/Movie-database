@@ -108,15 +108,11 @@ class MovieSearchViewModel: ObservableObject {
     func loadRecommendations(movies : [Movie]) {
            // Avoid spinners bouncing when returning from search to idle
            searchTask?.cancel()
-
+        
            Task {
                await setLoading(true)
                defer { Task { await self.setLoading(false) } }
-
-               async let trending = trendingMovies()
-               async let popular  = popularMovies()
-               async let top      = topratedMovies()
-               async let upcoming = upcomingMovies()
+               
                
                for movie in movies{
                    movie.id

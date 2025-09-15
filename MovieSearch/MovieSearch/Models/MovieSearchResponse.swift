@@ -12,13 +12,15 @@ struct MovieSearchResponse: Decodable {
 }
 
 class MovieSearchViewModel: ObservableObject {
-    @Published var searchText = ""
-       @Published var movies: [Movie] = []
-       @Published var isLoading = false
-
+    
+        @Published var searchText = ""
+        @Published var movies: [Movie] = []
+        @Published var isLoading = false
+        @Published var recommended: [Movie] = []
+    
        // NEW
-       @Published var recSections: [RecommendationSection] = []
-       @Published var recentQueries: [String] = UserDefaults.standard.stringArray(forKey: "recentQueries") ?? []
+        @Published var recSections: [RecommendationSection] = []
+        @Published var recentQueries: [String] = UserDefaults.standard.stringArray(forKey: "recentQueries") ?? []
 
        private var cache: [String: [Movie]] = [:]
        private var searchTask: Task<Void, Never>? = nil
@@ -105,26 +107,59 @@ class MovieSearchViewModel: ObservableObject {
        }
 
        // MARK: - Recommendations when empty
-    func loadRecommendations(movies : [Movie]) {
-           // Avoid spinners bouncing when returning from search to idle
-           searchTask?.cancel()
-        
-           Task {
-               await setLoading(true)
-               defer { Task { await self.setLoading(false) } }
-               
-               
-               for movie in movies{
-                   movie.id
-               }
-               async let recommendations = recommendedMovies(id: 1)
-               let sections = await [
-                   
-               ].filter { !$0.movies.isEmpty }
+        func loadRecommendations(ids: [Int]) {
+            // cancel any in-flight job
+            searchTask?.cancel()
 
-               await MainActor.run { self.recSections = sections }
-           }
-       }
+            searchTask = Task { [weak self] in
+                guard let self else { return }
+                await self.setLoading(true)
+                defer { await self.setLoading(false) }
+
+                let seedIds = Array(Set(ids)) // de-dupe input ids
+
+                // Fetch recs for each id in parallel
+                let lists: [[Movie]] = await withTaskGroup(of: [Movie].self) { group in
+                    for id in seedIds {
+                        group.addTask { [self] in
+                            (try? await self.recommendedMovies(id: id)) ?? []
+                        }
+                    }
+                    var out: [[Movie]] = []
+                    for await list in group { out.append(list) }
+                    return out
+                }
+
+                // Merge + de-dupe by movie.id
+                var seen = Set<Int>()
+                var merged: [Movie] = []
+                for list in lists {
+                    for m in list where seen.insert(m.id).inserted {
+                        merged.append(m)
+                    }
+                }
+
+                // Optional: remove the seed movies themselves
+                let seedSet = Set(seedIds)
+                merged.removeAll { seedSet.contains($0.id) }
+
+                // Optional: sort/limit
+                // merged.sort { $0.vote_average > $1.vote_average }
+                // merged = Array(merged.prefix(20))
+
+                await MainActor.run {
+                    self.recommended = merged
+                    // keep recSections in sync (Instagram-style single rail)
+                    self.recSections.removeAll { $0.title == "Recommended for You" }
+                    if !merged.isEmpty {
+                        self.recSections.insert(
+                            RecommendationSection(title: "Recommended for You", movies: merged),
+                            at: 0
+                        )
+                    }
+                }
+            }
+        }
     
     func trendingMovies() async throws -> [Movie] {
         do {

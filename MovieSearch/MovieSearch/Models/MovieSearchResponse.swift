@@ -34,7 +34,7 @@ class MovieSearchViewModel: ObservableObject {
                    guard let self else { return }
                    if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                        self.movies = []
-                       self.loadRecommendations()           // <— show “discover” when empty
+                       self.loadRecommendations(ids: [])           // <— show “discover” when empty
                    } else {
                        self.startSearch(query: query)
                    }
@@ -42,7 +42,7 @@ class MovieSearchViewModel: ObservableObject {
                .store(in: &cancellables)
 
            // initial load for first render
-           loadRecommendations()
+           loadRecommendations(ids: [])
        }
 
        // MARK: - Recents
@@ -108,52 +108,48 @@ class MovieSearchViewModel: ObservableObject {
 
        // MARK: - Recommendations when empty
         func loadRecommendations(ids: [Int]) {
-            // cancel any in-flight job
             searchTask?.cancel()
 
             searchTask = Task { [weak self] in
                 guard let self else { return }
-                await self.setLoading(true)
-                defer { await self.setLoading(false) }
 
-                let seedIds = Array(Set(ids)) // de-dupe input ids
+                // Set loading ON on main
+                await MainActor.run { self.isLoading = true }
+                // Can't await in defer → schedule the OFF change as a new Task
+                defer { Task { await MainActor.run { self.isLoading = false } } }
 
-                // Fetch recs for each id in parallel
-                let lists: [[Movie]] = await withTaskGroup(of: [Movie].self) { group in
-                    for id in seedIds {
+                // Fetch each id's recs concurrently, but return arrays — don't mutate shared vars in tasks
+                let recLists: [[Movie]] = await withTaskGroup(of: [Movie].self) { group in
+                    for id in Set(ids) {
                         group.addTask { [self] in
                             (try? await self.recommendedMovies(id: id)) ?? []
                         }
                     }
-                    var out: [[Movie]] = []
-                    for await list in group { out.append(list) }
-                    return out
+                    var collected: [[Movie]] = []
+                    for await list in group { collected.append(list) } // safe: this loop is sequential
+                    return collected
                 }
 
-                // Merge + de-dupe by movie.id
+                // Merge + de-dupe on the parent task (not inside the tasks)
                 var seen = Set<Int>()
                 var merged: [Movie] = []
-                for list in lists {
+                for list in recLists {
                     for m in list where seen.insert(m.id).inserted {
                         merged.append(m)
                     }
                 }
 
-                // Optional: remove the seed movies themselves
-                let seedSet = Set(seedIds)
-                merged.removeAll { seedSet.contains($0.id) }
+                // Optional: drop seeds themselves
+                let seedSet = Set(ids)
+                let final = merged.filter { !seedSet.contains($0.id) }
 
-                // Optional: sort/limit
-                // merged.sort { $0.vote_average > $1.vote_average }
-                // merged = Array(merged.prefix(20))
-
+                // Update UI state on main
                 await MainActor.run {
-                    self.recommended = merged
-                    // keep recSections in sync (Instagram-style single rail)
+                    self.recommended = final
                     self.recSections.removeAll { $0.title == "Recommended for You" }
-                    if !merged.isEmpty {
+                    if !final.isEmpty {
                         self.recSections.insert(
-                            RecommendationSection(title: "Recommended for You", movies: merged),
+                            RecommendationSection(title: "Recommended for You", movies: final),
                             at: 0
                         )
                     }

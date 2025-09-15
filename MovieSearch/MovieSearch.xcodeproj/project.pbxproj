@@ -34,6 +34,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Secrets.xcconfig,
 			);
 			target = 74E56A752DC12128009216A1 /* MovieSearch */;
 		};
@@ -184,7 +185,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1630;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					74E56A752DC12128009216A1 = {
 						CreatedOnToolsVersion = 16.3;

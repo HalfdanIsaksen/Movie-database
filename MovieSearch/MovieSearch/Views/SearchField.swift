@@ -76,6 +76,14 @@ struct SearchField: View {
             }
             movieStore.movies = newValue
         }
+        ..onAppear {
+            let ids = Array(Set(userViewModel.favoriteMovies.map { $0.id }))
+            viewModel.loadRecommendations(ids: ids)
+        }
+        .onChange(of: userViewModel.favoriteMovies) { _, newFavs in
+            let ids = Array(Set(newFavs.map { $0.id }))
+            viewModel.loadRecommendations(ids: ids)
+        }
         .navigationTitle("Explore")
     }
 }

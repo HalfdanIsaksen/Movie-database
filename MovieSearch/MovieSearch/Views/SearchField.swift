@@ -76,7 +76,7 @@ struct SearchField: View {
             }
             movieStore.movies = newValue
         }
-        ..onAppear {
+        .onAppear {
             let ids = Array(Set(userViewModel.favoriteMovies.map { $0.id }))
             viewModel.loadRecommendations(ids: ids)
         }

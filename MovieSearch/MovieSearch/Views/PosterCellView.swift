@@ -7,16 +7,20 @@
 import SwiftUI
 
 struct PosterCell: View {
-    let movie: MovieModel
+    let movie: Movie
     let userViewModel: UserViewModel
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             // Poster image fills the cell
-            AsyncImage(url: movie.posterURL) { img in
-                img.resizable().scaledToFill()
-            } placeholder: {
-                Rectangle().fill(.secondary.opacity(0.2))
-            }
+            if let path = movie.poster_path,
+               let url = URL(string: "https://image.tmdb.org/t/p/w200\(path)") {
+                AsyncImage(url: url) { image in
+                    image.resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Rectangle().fill(.secondary.opacity(0.2))
+                    }
+                }
 
             // Title overlay (optional)
             LinearGradient(colors: [.black.opacity(0.0), .black.opacity(0.6)], startPoint: .center, endPoint: .bottom)
@@ -26,6 +30,6 @@ struct PosterCell: View {
                 .padding(8)
         }
         .contentShape(Rectangle())
-        .onTapGesture { /* open details */ }
+        .onTapGesture {  }
     }
 }

@@ -45,13 +45,19 @@ struct SearchField: View {
 
                     // Sections
                     VStack(alignment: .leading, spacing: 20) {
-                           ForEach(viewModel.recSections) { section in
-                               MovieColumn(
-                                   title: section.title,
-                                   movies: section.movies,
-                                   userViewModel: userViewModel
-                               )
-                           }
+                        ForEach(viewModel.recSections) { section in
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Text(section.title)
+                                        .font(.headline)
+                                        .padding(.horizontal, 16)
+
+                                    MosaicGrid(movies: section.movies) { movie in
+                                        // Your movie cell
+                                        PosterCell(movie: movie, userViewModel: userViewModel)
+                                    }
+                                    .padding(.horizontal, 12)
+                                }
+                            }
                        }
                     .padding(.top, 8)
                 }

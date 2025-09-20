@@ -30,6 +30,5 @@ struct PosterCell: View {
                 .padding(8)
         }
         .contentShape(Rectangle())
-        .onTapGesture {  }
     }
 }

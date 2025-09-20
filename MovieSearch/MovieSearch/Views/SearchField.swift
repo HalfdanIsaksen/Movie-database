@@ -42,7 +42,7 @@ struct SearchField: View {
                         }
                         .padding(.vertical, 8)
                     }
-
+                    
                     // Sections
                     VStack(alignment: .leading, spacing: 20) {
                         ForEach(viewModel.recSections) { section in
@@ -53,7 +53,9 @@ struct SearchField: View {
 
                                     MosaicGrid(movies: section.movies) { movie in
                                         // Your movie cell
-                                        PosterCell(movie: movie, userViewModel: userViewModel)
+                                        NavigationLink(destination: MovieView(movie: movie, userViewModel: userViewModel)) {
+                                            PosterCell(movie: movie, userViewModel: userViewModel)
+                                        }
                                     }
                                     .padding(.horizontal, 12)
                                 }
@@ -72,8 +74,7 @@ struct SearchField: View {
                 }
                 .listStyle(.plain)
             }
-        }
-        .onChange(of: viewModel.movies) { oldValue, newValue in
+        }.onChange(of: viewModel.movies) { oldValue, newValue in
             for movie in newValue {
                 if userViewModel.isFavorited(movie),
                    !userViewModel.favoriteMovies.contains(where: { $0.id == movie.id }) {

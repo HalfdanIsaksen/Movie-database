@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 
 struct SearchField: View {
-    @EnvironmentObject var viewModel: MovieSearchViewModel 
+    @EnvironmentObject var viewModel: MovieSearchViewModel
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var movieStore: MovieStored
 
@@ -82,8 +82,7 @@ struct SearchField: View {
                 }
             }
             movieStore.movies = newValue
-        }
-        .onAppear {
+        }.onAppear {
             let ids = Array(Set(userViewModel.favoriteMovies.map { $0.id }))
             viewModel.loadRecommendations(ids: ids)
         }

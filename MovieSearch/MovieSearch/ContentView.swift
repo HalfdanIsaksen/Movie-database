@@ -22,6 +22,7 @@ struct ContentView: View {
            )
        )
     @StateObject private var movieStore = MovieStored()
+    @StateObject private var movieSearchModel = MovieSearchViewModel()
     
     // Dummy user and movies for now
        /* private let testUser = UserModel(
@@ -43,6 +44,7 @@ struct ContentView: View {
             }
             NavigationView {
                 SearchField(userViewModel: userViewModel)
+                    .environmentObject(movieSearchModel)
                     .environmentObject(movieStore)
             }
             .tabItem {

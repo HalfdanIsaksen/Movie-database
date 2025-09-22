@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 
 struct SearchField: View {
-    @StateObject private var viewModel = MovieSearchViewModel()
+    @EnvironmentObject var viewModel: MovieSearchViewModel 
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var movieStore: MovieStored
 

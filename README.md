@@ -36,7 +36,7 @@ Swift Movie Search is an iOS app built with **SwiftUI** that allows users to sea
 ### 1. Clone the repository  
 ```bash
 git clone https://github.com/your-username/Swift-Movie-Search.git
-cd Swift-Movie-Search
+cd Swift-Movie-Search```
 
 ###  2. Install dependencies
 No external dependencies – everything runs with Swift and Xcode.

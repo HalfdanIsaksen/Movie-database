@@ -34,15 +34,15 @@ Swift Movie Search is an iOS app built with **SwiftUI** that allows users to sea
 ## 🚀 Getting Started  
 
 ### 1. Clone the repository  
-``bash
-git clone https://github.com/your-username/Swift-Movie-Search.git
-cd Swift-Movie-Search ``
+`bash\
+git clone https://github.com/your-username/Swift-Movie-Search.git\
+cd Swift-Movie-Search `
 
 ###  2. Install dependencies
 No external dependencies – everything runs with Swift and Xcode.
 
 ### 3. Configure API Key
-Get a free API key from TMDB: https://www.themoviedb.org.
-Create a file called Secrets.xcconfig in the project root:
-TMDB_API_KEY = your_api_key_here
+Get a free API key from TMDB: https://www.themoviedb.org. \
+Create a file called Secrets.xcconfig in the project root: \
+TMDB_API_KEY = your_api_key_here \
 The project will automatically use this key when building.

@@ -12,6 +12,7 @@ struct SearchField: View {
     @ObservedObject var userViewModel: UserViewModel
     @EnvironmentObject var movieStore: MovieStored
 
+    @State private var didBootstrap = false
     var body: some View {
         VStack(spacing: 0) {
             // Search bar
@@ -74,18 +75,16 @@ struct SearchField: View {
                 }
                 .listStyle(.plain)
             }
-        }.onChange(of: viewModel.movies) { oldValue, newValue in
-            for movie in newValue {
-                if userViewModel.isFavorited(movie),
-                   !userViewModel.favoriteMovies.contains(where: { $0.id == movie.id }) {
-                    userViewModel.favoriteMovies.append(movie)
-                }
-            }
-            movieStore.movies = newValue
+        }.onAppear {
+            // Run exactly once per view lifetime
+            guard !didBootstrap else { return }
+            didBootstrap = true
+            let ids = Array(Set(userViewModel.favoriteMovies.map(\.id)))
+            viewModel.loadRecommendationsIfNeeded(ids: ids.isEmpty ? [] : ids)
         }
         .onChange(of: userViewModel.favoriteMovies) { _, newFavs in
-            let ids = Array(Set(newFavs.map { $0.id }))
-            viewModel.loadRecommendations(ids: ids)
+            let ids = Array(Set(newFavs.map(\.id)))
+            viewModel.loadRecommendationsIfNeeded(ids: ids)
         }
         .navigationTitle("Explore")
     }

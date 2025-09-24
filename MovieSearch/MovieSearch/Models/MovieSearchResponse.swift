@@ -17,16 +17,22 @@ class MovieSearchViewModel: ObservableObject {
         @Published var movies: [Movie] = []
         @Published var isLoading = false
         @Published var recommended: [Movie] = []
-    
-       // NEW
         @Published var recSections: [RecommendationSection] = []
         @Published var recentQueries: [String] = UserDefaults.standard.stringArray(forKey: "recentQueries") ?? []
 
-       private var cache: [String: [Movie]] = [:]
-       private var searchTask: Task<Void, Never>? = nil
-       private var cancellables = Set<AnyCancellable>()
+        private var cache: [String: [Movie]] = [:]
+        private var searchTask: Task<Void, Never>? = nil
+        private var cancellables = Set<AnyCancellable>()
+        private var recTask: Task<Void, Never>?
+        private var recCache: [String: [RecommendationSection]] = [:]
+        private var lastRecKey: String?
+        private var didBuildDiscover = false
+    
+        private func key(for ids: [Int]) -> String {
+            Array(Set(ids)).sorted().map(String.init).joined(separator: ",")
+        }
 
-       init() {
+        init() {
            $searchText
                .debounce(for: .milliseconds(450), scheduler: DispatchQueue.main)
                .removeDuplicates()
@@ -40,20 +46,17 @@ class MovieSearchViewModel: ObservableObject {
                    }
                }
                .store(in: &cancellables)
+        }
 
-           // initial load for first render
-           loadRecommendations(ids: [])
-       }
-
-       // MARK: - Recents
-       func addRecentQuery(_ query: String) {
+        // MARK: - Recents
+        func addRecentQuery(_ query: String) {
            let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
            guard !q.isEmpty else { return }
            var set = LinkedHashSet(recentQueries)             // preserves order, removes dups
            set.prepend(q)
            recentQueries = Array(set.prefix(10))
            UserDefaults.standard.set(recentQueries, forKey: "recentQueries")
-       }
+        }
 
        func removeRecentQuery(_ query: String) {
            recentQueries.removeAll { $0.caseInsensitiveCompare(query) == .orderedSame }
@@ -106,53 +109,59 @@ class MovieSearchViewModel: ObservableObject {
            }
        }
 
-       // MARK: - Recommendations when empty
+    func loadRecommendationsIfNeeded(ids: [Int]) {
+            let k = key(for: ids)
+            if k == lastRecKey, !recSections.isEmpty { return }          // nothing changed
+            if let cached = recCache[k] {                                 // instant reuse
+                recSections = cached
+                lastRecKey = k
+                return
+            }
+            loadRecommendations(ids: ids)                                 // fetch/build
+        }
+
         func loadRecommendations(ids: [Int]) {
-            searchTask?.cancel()
-
-            searchTask = Task { [weak self] in
+            recTask?.cancel()
+            recTask = Task { [weak self] in
                 guard let self else { return }
+                let k = key(for: ids)
 
-                // Set loading ON on main
-                await MainActor.run { self.isLoading = true }
-                // Can't await in defer → schedule the OFF change as a new Task
+                await MainActor.run { if self.recCache[k] == nil { self.isLoading = true } }
                 defer { Task { await MainActor.run { self.isLoading = false } } }
 
-                // Fetch each id's recs concurrently, but return arrays — don't mutate shared vars in tasks
-                let recLists: [[Movie]] = await withTaskGroup(of: [Movie].self) { group in
-                    for id in Set(ids) {
-                        group.addTask { [self] in
-                            (try? await self.recommendedMovies(id: id)) ?? []
+                if ids.isEmpty {
+                    if didBuildDiscover, let cached = recCache[""] {
+                        await MainActor.run {
+                            self.recSections = cached
+                            self.lastRecKey = ""
                         }
+                        return
                     }
-                    var collected: [[Movie]] = []
-                    for await list in group { collected.append(list) } // safe: this loop is sequential
-                    return collected
+                    await MainActor.run {
+                        self.recCache[""] = self.recSections
+                        self.lastRecKey = ""
+                        self.didBuildDiscover = true
+                    }
+                    return
                 }
 
-                // Merge + de-dupe on the parent task (not inside the tasks)
-                var seen = Set<Int>()
-                var merged: [Movie] = []
-                for list in recLists {
-                    for m in list where seen.insert(m.id).inserted {
-                        merged.append(m)
-                    }
+                // your existing merge of recommended-for-you
+                let lists: [[Movie]] = await withTaskGroup(of: [Movie].self) { group in
+                    for id in Set(ids) { group.addTask { [self] in (try? await self.recommendedMovies(id: id)) ?? [] } }
+                    var out: [[Movie]] = []; for await x in group { out.append(x) }; return out
                 }
+                var seen = Set<Int>(), merged: [Movie] = []
+                for list in lists { for m in list where seen.insert(m.id).inserted { merged.append(m) } }
+                let final = merged.filter { !Set(ids).contains($0.id) }
 
-                // Optional: drop seeds themselves
-                let seedSet = Set(ids)
-                let final = merged.filter { !seedSet.contains($0.id) }
-
-                // Update UI state on main
                 await MainActor.run {
-                    self.recommended = final
-                    self.recSections.removeAll { $0.title == "Recommended for You" }
+                    var sections = self.recSections.filter { $0.title != "Recommended for You" }
                     if !final.isEmpty {
-                        self.recSections.insert(
-                            RecommendationSection(title: "Recommended for You", movies: final),
-                            at: 0
-                        )
+                        sections.insert(RecommendationSection(title: "Recommended for You", movies: final), at: 0)
                     }
+                    self.recSections = sections
+                    self.recCache[k] = sections
+                    self.lastRecKey = k
                 }
             }
         }

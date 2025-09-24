@@ -19,6 +19,7 @@ class MovieSearchViewModel: ObservableObject {
         @Published var recommended: [Movie] = []
         @Published var recSections: [RecommendationSection] = []
         @Published var recentQueries: [String] = UserDefaults.standard.stringArray(forKey: "recentQueries") ?? []
+        @Published private(set) var favoriteIDs: [Int] = []
 
         private var cache: [String: [Movie]] = [:]
         private var searchTask: Task<Void, Never>? = nil
@@ -37,17 +38,21 @@ class MovieSearchViewModel: ObservableObject {
                .debounce(for: .milliseconds(450), scheduler: DispatchQueue.main)
                .removeDuplicates()
                .sink { [weak self] query in
-                   guard let self else { return }
-                   if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                guard let self else { return }
+                   let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+                   if trimmed.isEmpty {
                        self.movies = []
-                       self.loadRecommendations(ids: [])           // <— show “discover” when empty
+                       self.loadRecommendationsIfNeeded(ids: self.favoriteIDs)
                    } else {
-                       self.startSearch(query: query)
+                       self.startSearch(query: trimmed)
                    }
                }
                .store(in: &cancellables)
         }
-
+        func setFavoriteIDs(_ ids: [Int]) {
+            favoriteIDs = Array(Set(ids)).sorted()
+        }
+    
         // MARK: - Recents
         func addRecentQuery(_ query: String) {
            let q = query.trimmingCharacters(in: .whitespacesAndNewlines)

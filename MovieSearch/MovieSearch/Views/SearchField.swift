@@ -76,15 +76,12 @@ struct SearchField: View {
                 .listStyle(.plain)
             }
         }.onAppear {
-            // Run exactly once per view lifetime
-            guard !didBootstrap else { return }
-            didBootstrap = true
-            let ids = Array(Set(userViewModel.favoriteMovies.map(\.id)))
-            viewModel.loadRecommendationsIfNeeded(ids: ids.isEmpty ? [] : ids)
+            viewModel.setFavoriteIDs(userViewModel.favoriteMovies.map(\.id))
+            viewModel.loadRecommendationsIfNeeded(ids: viewModel.favoriteIDs) // first open
         }
         .onChange(of: userViewModel.favoriteMovies) { _, newFavs in
-            let ids = Array(Set(newFavs.map(\.id)))
-            viewModel.loadRecommendationsIfNeeded(ids: ids)
+            viewModel.setFavoriteIDs(newFavs.map(\.id))
+            viewModel.loadRecommendationsIfNeeded(ids: viewModel.favoriteIDs)
         }
         .navigationTitle("Explore")
     }

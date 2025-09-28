@@ -9,20 +9,21 @@ import SwiftUI
 
 struct MosaicGrid<Movie: Identifiable, Cell: View>: View {
     let movies: [Movie]
-    var smallHeight: CGFloat = 170         // tweak to taste / aspect ratio
+    var smallHeight: CGFloat = 170
     var hSpacing: CGFloat = 8
     var vSpacing: CGFloat = 8
     @ViewBuilder let cell: (Movie) -> Cell
 
-    private var cycleSize: Int { 6 }       // 3 small + (1 large + 2 small) = 6 per pattern
+    private var cycleSize: Int { 6 } // 3 small + 3 mosaic slots
 
     var body: some View {
-        Grid(horizontalSpacing: hSpacing, verticalSpacing: vSpacing) {
-            // Process in groups of 6 so the pattern repeats
-            ForEach(Array(movies.chunked(into: cycleSize)).indices, id: \.self) { idx in
-                let group = movies.chunked(into: cycleSize)[idx]
+        let groups = movies.chunked(into: cycleSize)
 
-                // Row A: up to 3 small posters
+        Grid(horizontalSpacing: hSpacing, verticalSpacing: vSpacing) {
+            ForEach(groups.indices, id: \.self) { groupIdx in
+                let group = groups[groupIdx]
+
+                // Row 1: up to 3 small posters
                 GridRow {
                     ForEach(0..<3, id: \.self) { i in
                         if i < group.count {
@@ -33,27 +34,50 @@ struct MosaicGrid<Movie: Identifiable, Cell: View>: View {
                     }
                 }
 
-                // Row B: mosaic (1 large spanning two columns + two stacked smalls)
+                // Row 2: alternate the mosaic side each cycle
                 if group.count > 3 {
+                    // slots: [3] is the "large" candidate, [4], [5] are smalls if available
                     let large = group[3]
-                    let rightSmalls = Array(group.dropFirst(4).prefix(2))
+                    let small4 = group.indices.contains(4) ? group[4] : nil
+                    let small5 = group.indices.contains(5) ? group[5] : nil
+
+                    let isEvenCycle = groupIdx % 2 == 0
 
                     GridRow {
-                        // Large poster: width = 2 columns, height = ~2 smalls + spacing
-                        SizedCell(height: smallHeight * 2 + vSpacing) { cell(large) }
-                            .gridCellColumns(2)
+                        if isEvenCycle {
+                            // Large LEFT, two smalls stacked RIGHT
+                            SizedCell(height: smallHeight * 2 + vSpacing) { cell(large) }
+                                .gridCellColumns(2)
 
-                        VStack(spacing: vSpacing) {
-                            if rightSmalls.indices.contains(0) {
-                                SizedCell(height: smallHeight) { cell(rightSmalls[0]) }
-                            } else {
-                                Color.clear.frame(height: smallHeight)
+                            VStack(spacing: vSpacing) {
+                                if let s4 = small4 {
+                                    SizedCell(height: smallHeight) { cell(s4) }
+                                } else {
+                                    Color.clear.frame(height: smallHeight)
+                                }
+                                if let s5 = small5 {
+                                    SizedCell(height: smallHeight) { cell(s5) }
+                                } else {
+                                    Color.clear.frame(height: smallHeight)
+                                }
                             }
-                            if rightSmalls.indices.contains(1) {
-                                SizedCell(height: smallHeight) { cell(rightSmalls[1]) }
-                            } else {
-                                Color.clear.frame(height: smallHeight)
+                        } else {
+                            // Two smalls stacked LEFT, Large RIGHT
+                            VStack(spacing: vSpacing) {
+                                if let s4 = small4 {
+                                    SizedCell(height: smallHeight) { cell(s4) }
+                                } else {
+                                    Color.clear.frame(height: smallHeight)
+                                }
+                                if let s5 = small5 {
+                                    SizedCell(height: smallHeight) { cell(s5) }
+                                } else {
+                                    Color.clear.frame(height: smallHeight)
+                                }
                             }
+
+                            SizedCell(height: smallHeight * 2 + vSpacing) { cell(large) }
+                                .gridCellColumns(2)
                         }
                     }
                 }

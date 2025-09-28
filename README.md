@@ -16,8 +16,10 @@ Swift Movie Search is an iOS app built with **SwiftUI** that allows users to sea
 ---
 
 ## 📸 Screenshots  
+<img width="321" height="694" alt="image" src="https://github.com/user-attachments/assets/dee91536-6371-40c1-81c4-f3ec932586d6" />
+<img width="321" height="694" alt="image" src="https://github.com/user-attachments/assets/50d489a0-0af5-4772-9171-24ebae275198" />
+<img width="321" height="694" alt="image" src="https://github.com/user-attachments/assets/f9a35c09-253f-4bff-ae90-0b8458087350" />
 
-*(Add screenshots or GIFs of your app here once available)*  
 
 ---
 
